@@ -2,6 +2,16 @@
 
 cmake_minimum_required (VERSION 3.2)
 
+#if(WIN32)
+#    set(HUNTER_ROOT c:/Users/Dvir/Documents/GitHub/hunter)
+#endif()
+include(cmake/HunterGate.cmake)
+
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.18.36.tar.gz"
+    SHA1 "50eaca2a8083ac266bdec6655c64f352c380b784"
+)
+
 project (Beast)
 
 option(Boost_USE_STATIC_LIBS "Use static libraries for boost" ON)
@@ -34,10 +44,9 @@ else()
 endif()
 
 set(Boost_USE_MULTITHREADED ON)
-
-find_package(Boost REQUIRED COMPONENTS coroutine context thread filesystem program_options system)
-include_directories(SYSTEM ${Boost_INCLUDE_DIRS})
-link_directories(${Boost_LIBRARY_DIR})
+set(BOOST_COMPONENTS coroutine context thread filesystem program_options system)
+hunter_add_package(Boost COMPONENTS ${BOOST_COMPONENTS})
+find_package(Boost CONFIG REQUIRED ${BOOST_COMPONENTS})
 
 add_definitions ("-DBOOST_COROUTINES_NO_DEPRECATION_WARNING")
 
@@ -50,10 +59,11 @@ if (APPLE AND NOT DEFINED ENV{OPENSSL_ROOT_DIR})
   endif()
 endif()
 
+hunter_add_package(OpenSSL)
 find_package(OpenSSL)
 
 if (MINGW)
-    link_libraries(${Boost_LIBRARIES} ws2_32 mswsock)
+    link_libraries(ws2_32 mswsock)
 endif()
 
 if ("${VARIANT}" STREQUAL "coverage")

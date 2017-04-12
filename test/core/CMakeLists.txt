@@ -37,8 +37,9 @@ add_executable (core-tests
     sha1.cpp
 )
 
+target_link_libraries(core-tests Boost::boost Boost::program_options Boost::filesystem Boost::system 
+        Boost::coroutine Boost::thread Boost::context)
+
 if (NOT WIN32)
-    target_link_libraries(core-tests ${Boost_LIBRARIES} Threads::Threads)
-else()
-    target_link_libraries(core-tests ${Boost_LIBRARIES})
+    target_link_libraries(core-tests Threads::Threads)
 endif()

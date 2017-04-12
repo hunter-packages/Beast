@@ -30,10 +30,11 @@ add_executable (http-tests
     chunk_encode.cpp
 )
 
+target_link_libraries(http-tests Boost::boost Boost::program_options Boost::filesystem Boost::system 
+    Boost::coroutine Boost::thread Boost::context)
+
 if (NOT WIN32)
-    target_link_libraries(http-tests ${Boost_LIBRARIES} Threads::Threads)
-else()
-    target_link_libraries(http-tests ${Boost_LIBRARIES})
+    target_link_libraries(http-tests Threads::Threads)
 endif()
 
 add_executable (bench-tests
@@ -45,8 +46,7 @@ add_executable (bench-tests
     parser_bench.cpp
 )
 
+target_link_libraries(bench-tests Boost::boost Boost::program_options Boost::filesystem Boost::system)
 if (NOT WIN32)
-    target_link_libraries(bench-tests ${Boost_LIBRARIES} Threads::Threads)
-else()
-    target_link_libraries(bench-tests ${Boost_LIBRARIES})
+    target_link_libraries(bench-tests Threads::Threads)
 endif()

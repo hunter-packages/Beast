@@ -15,10 +15,10 @@ add_executable (lib-tests
     zlib.cpp
 )
 
+target_link_libraries(lib-tests Boost::boost Boost::program_options Boost::system)
+
 if (NOT WIN32)
-    target_link_libraries(lib-tests ${Boost_LIBRARIES} Threads::Threads)
-else()
-    target_link_libraries(lib-tests ${Boost_LIBRARIES})
+    target_link_libraries(lib-tests Threads::Threads)
 endif()
 
 if (MINGW)

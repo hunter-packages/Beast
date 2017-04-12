@@ -20,10 +20,11 @@ add_executable (websocket-tests
     utf8_checker.cpp
 )
 
+target_link_libraries(websocket-tests Boost::boost Boost::program_options Boost::filesystem Boost::system 
+	Boost::coroutine Boost::thread Boost::context)
+
 if (NOT WIN32)
-    target_link_libraries(websocket-tests ${Boost_LIBRARIES} Threads::Threads)
-else()
-    target_link_libraries(websocket-tests ${Boost_LIBRARIES})
+    target_link_libraries(websocket-tests Threads::Threads)
 endif()
 
 if (MINGW)
