@@ -1,12 +1,6 @@
 # Part of Beast
 
-GroupSources(extras/beast extras)
-GroupSources(include/beast beast)
-GroupSources(test/core "/")
-
 add_executable (core-tests
-    ${BEAST_INCLUDES}
-    ${EXTRAS_INCLUDES}
     ../../extras/beast/unit_test/main.cpp
     async_result.cpp
     bind_handler.cpp
@@ -33,6 +27,4 @@ add_executable (core-tests
     sha1.cpp
 )
 
-if (NOT WIN32)
-    target_link_libraries(core-tests ${Boost_LIBRARIES} Threads::Threads)
-endif()
+target_link_libraries(core-tests Beast)

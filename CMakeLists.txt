@@ -2,11 +2,20 @@
 
 cmake_minimum_required (VERSION 3.5.2)
 
-project (Beast)
+include(cmake/HunterGate.cmake)
+HunterGate(
+    URL "https://github.com/ruslo/hunter/archive/v0.18.36.tar.gz"
+    SHA1 "50eaca2a8083ac266bdec6655c64f352c380b784"
+)
+
+project(Beast VERSION 1.0.0)
+
+option(Beast_BUILD_EXAMPLES "Build examples" OFF)
+option(Beast_BUILD_TESTS "Build tests" OFF)
 
 set_property (GLOBAL PROPERTY USE_FOLDERS ON)
 
-if (MSVC)
+if(MSVC)
     set (CMAKE_VERBOSE_MAKEFILE FALSE)
 
     add_definitions (-D_WIN32_WINNT=0x0601)
@@ -30,7 +39,6 @@ if (MSVC)
 
 else()
     set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads)
 
     set(CMAKE_CXX_FLAGS
       "${CMAKE_CXX_FLAGS} -std=c++11 -Wall -Wextra -Wpedantic -Wno-unused-parameter")
@@ -41,157 +49,109 @@ endif()
 # Boost
 #
 
-option (Boost_USE_STATIC_LIBS "Use static libraries for boost" ON)
-
-set (Boost_NO_SYSTEM_PATHS ON)
-set (Boost_USE_MULTITHREADED ON)
+set(Boost_USE_MULTITHREADED ON)
 add_definitions (-DBOOST_COROUTINES_NO_DEPRECATION_WARNING=1) # for asio
-
-unset (Boost_INCLUDE_DIR CACHE)
-unset (Boost_LIBRARY_DIRS CACHE)
-if (MSVC)
-    find_package (Boost REQUIRED)
-else()
-    find_package (Boost REQUIRED COMPONENTS
-        coroutine
-        context
-        filesystem
-        program_options
-        system
-        thread
-        )
-    link_libraries (${Boost_LIBRARIES})
-endif()
-
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
-
-if (MINGW)
-    link_libraries(ws2_32 mswsock)
-endif()
+set(BOOST_COMPONENTS coroutine context thread filesystem program_options system)
+hunter_add_package(Boost COMPONENTS ${BOOST_COMPONENTS})
+find_package(Boost CONFIG REQUIRED ${BOOST_COMPONENTS})
 
 #-------------------------------------------------------------------------------
 #
 # OpenSSL
 #
 
-if (APPLE AND NOT DEFINED ENV{OPENSSL_ROOT_DIR})
-  find_program(HOMEBREW brew)
-  if (NOT HOMEBREW STREQUAL "HOMEBREW-NOTFOUND")
-    execute_process(COMMAND brew --prefix openssl
-      OUTPUT_VARIABLE OPENSSL_ROOT_DIR
-      OUTPUT_STRIP_TRAILING_WHITESPACE)
-  endif()
+if(Beast_BUILD_EXAMPLES OR Beast_BUILD_TESTS)
+    hunter_add_package(OpenSSL)
+    find_package(OpenSSL)
 endif()
-
-find_package(OpenSSL)
 
 #
 #-------------------------------------------------------------------------------
 
-function(DoGroupSources curdir rootdir folder)
-    file(GLOB children RELATIVE ${PROJECT_SOURCE_DIR}/${curdir} ${PROJECT_SOURCE_DIR}/${curdir}/*)
-    foreach(child ${children})
-        if(IS_DIRECTORY ${PROJECT_SOURCE_DIR}/${curdir}/${child})
-            DoGroupSources(${curdir}/${child} ${rootdir} ${folder})
-        elseif(${child} STREQUAL "CMakeLists.txt")
-            source_group("" FILES ${PROJECT_SOURCE_DIR}/${curdir}/${child})
-        else()
-            string(REGEX REPLACE ^${rootdir} ${folder} groupname ${curdir})
-            string(REPLACE "/" "\\" groupname ${groupname})
-            source_group(${groupname} FILES ${PROJECT_SOURCE_DIR}/${curdir}/${child})
-        endif()
-    endforeach()
-endfunction()
-
-function(GroupSources curdir folder)
-    DoGroupSources(${curdir} ${curdir} ${folder})
-endfunction()
-
-#-------------------------------------------------------------------------------
-
-if ("${VARIANT}" STREQUAL "coverage")
-    set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
-    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lgcov")
-
-elseif ("${VARIANT}" STREQUAL "ubasan")
-    set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -funsigned-char -fno-omit-frame-pointer -fsanitize=address,undefined -fsanitize-blacklist=${PROJECT_SOURCE_DIR}/scripts/blacklist.supp")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address,undefined")
-    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-
-elseif ("${VARIANT}" STREQUAL "asan")
-    set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -funsigned-char -fsanitize=address -fno-omit-frame-pointer")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=address")
-    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-
-elseif ("${VARIANT}" STREQUAL "usan")
-    set(CMAKE_CXX_FLAGS
-      "${CMAKE_CXX_FLAGS} -fsanitize=undefined -fsanitize-blacklist=${PROJECT_SOURCE_DIR}/scripts/blacklist.supp -fno-omit-frame-pointer")
-    set (CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fsanitize=undefined")
-    set(CMAKE_BUILD_TYPE RELWITHDEBINFO)
-
-elseif ("${VARIANT}" STREQUAL "debug")
-    set(CMAKE_BUILD_TYPE DEBUG)
-
-elseif ("${VARIANT}" STREQUAL "release")
-    set(CMAKE_BUILD_TYPE RELEASE)
-
+if(Beast_BUILD_TESTS)
+    set(ZLIB_SOURCES
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/crc32.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/deflate.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inffast.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inffixed.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inflate.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inftrees.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/trees.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/zlib.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/zutil.h
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/adler32.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/compress.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/crc32.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/deflate.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/infback.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inffast.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inflate.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inftrees.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/trees.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/uncompr.c
+        ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/zutil.c
+    )
 endif()
 
-include_directories (.)
-include_directories (extras)
-include_directories (include)
+### Library ###
+add_library(${PROJECT_NAME} INTERFACE)
+target_link_libraries(${PROJECT_NAME} INTERFACE Boost::coroutine Boost::context Boost::thread Boost::filesystem Boost::program_options Boost::system)
 
-set(ZLIB_SOURCES
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/crc32.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/deflate.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inffast.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inffixed.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inflate.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inftrees.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/trees.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/zlib.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/zutil.h
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/adler32.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/compress.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/crc32.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/deflate.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/infback.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inffast.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inflate.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/inftrees.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/trees.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/uncompr.c
-    ${PROJECT_SOURCE_DIR}/test/zlib/zlib-1.2.8/zutil.c
+### Install ###
+set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
+
+set(config_install_dir "lib/cmake/${PROJECT_NAME}")
+set(include_install_dir "include")
+
+set(version_config "${generated_dir}/${PROJECT_NAME}ConfigVersion.cmake")
+set(project_config "${generated_dir}/${PROJECT_NAME}Config.cmake")
+set(targets_export_name "${PROJECT_NAME}Targets")
+set(namespace "${PROJECT_NAME}::")
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file(
+    "${version_config}" COMPATIBILITY SameMajorVersion
 )
 
-file(GLOB_RECURSE BEAST_INCLUDES
-    ${PROJECT_SOURCE_DIR}/include/beast/*.hpp
-    ${PROJECT_SOURCE_DIR}/include/beast/*.ipp
+# Note: use 'targets_export_name'
+configure_file("cmake/Config.cmake.in" "${project_config}" @ONLY)
+
+install(
+    TARGETS ${PROJECT_NAME}
+    EXPORT "${targets_export_name}"
+    INCLUDES DESTINATION "${include_install_dir}"
 )
 
-file(GLOB_RECURSE EXAMPLES_INCLUDES
-    ${PROJECT_SOURCE_DIR}/examples/*.hpp
-  )
-
-file(GLOB_RECURSE EXTRAS_INCLUDES
-    ${PROJECT_SOURCE_DIR}/extras/beast/*.hpp
-    ${PROJECT_SOURCE_DIR}/extras/beast/*.ipp
+install(
+    DIRECTORY "include/"
+    DESTINATION "${include_install_dir}"
 )
 
-add_subdirectory (examples)
-if (NOT OPENSSL_FOUND)
-    message("OpenSSL not found. Not building SSL tests and examples")
-else()
+install(
+    FILES "${project_config}" "${version_config}"
+    DESTINATION "${config_install_dir}"
+)
+
+install(
+    EXPORT "${targets_export_name}"
+    NAMESPACE "${namespace}"
+    DESTINATION "${config_install_dir}"
+)
+
+include_directories(.)
+include_directories(include)
+include_directories(extras)
+
+if(Beast_BUILD_EXAMPLES)
+    add_subdirectory (examples)
     add_subdirectory (examples/ssl)
-    add_subdirectory (test/websocket/ssl)
 endif()
 
-add_subdirectory (test)
-add_subdirectory (test/core)
-add_subdirectory (test/http)
-add_subdirectory (test/websocket)
-add_subdirectory (test/zlib)
+if(Beast_BUILD_TESTS)
+    add_subdirectory (test)
+    add_subdirectory (test/core)
+    add_subdirectory (test/http)
+    add_subdirectory (test/websocket)
+    add_subdirectory (test/websocket/ssl)
+    add_subdirectory (test/zlib)
+endif()
