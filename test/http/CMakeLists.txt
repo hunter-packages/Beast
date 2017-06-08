@@ -1,14 +1,6 @@
 # Part of Beast
 
-GroupSources(examples examples)
-GroupSources(extras/beast extras)
-GroupSources(include/beast beast)
-GroupSources(test/http "/")
-
 add_executable (http-tests
-    ${BEAST_INCLUDES}
-    ${EXAMPLES_INCLUDES}
-    ${EXTRAS_INCLUDES}
     message_fuzz.hpp
     test_parser.hpp
     ../../extras/beast/unit_test/main.cpp
@@ -33,15 +25,11 @@ add_executable (http-tests
     write.cpp
 )
 
-if (NOT WIN32)
-    target_link_libraries(http-tests ${Boost_LIBRARIES} Threads::Threads)
-else()
-    target_link_libraries(http-tests ${Boost_LIBRARIES})
-endif()
+target_include_directories(http-tests PRIVATE ../../examples)
+
+target_link_libraries(http-tests Beast)
 
 add_executable (http-bench
-    ${BEAST_INCLUDES}
-    ${EXTRAS_INCLUDES}
     nodejs_parser.hpp
     message_fuzz.hpp
     ../../extras/beast/unit_test/main.cpp
@@ -49,8 +37,4 @@ add_executable (http-bench
     parser_bench.cpp
 )
 
-if (NOT WIN32)
-    target_link_libraries(http-bench ${Boost_LIBRARIES} Threads::Threads)
-else()
-    target_link_libraries(http-bench ${Boost_LIBRARIES})
-endif()
+target_link_libraries(http-bench Beast)
