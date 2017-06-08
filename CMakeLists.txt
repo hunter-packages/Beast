@@ -42,7 +42,10 @@ else()
 endif()
 
 set(Boost_USE_MULTITHREADED ON)
-set(BOOST_COMPONENTS coroutine context thread filesystem program_options system)
+set(BOOST_COMPONENTS system)
+if (Beast_BUILD_EXAMPLES OR Beast_BUILD_TESTS)
+    list(APPEND BOOST_COMPONENTS coroutine context thread filesystem program_options)
+endif()
 hunter_add_package(Boost COMPONENTS ${BOOST_COMPONENTS})
 find_package(Boost CONFIG REQUIRED ${BOOST_COMPONENTS})
 
@@ -156,7 +159,7 @@ if(Beast_BUILD_TESTS)
 endif(Beast_BUILD_TESTS)
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE Boost::coroutine Boost::context Boost::thread Boost::filesystem Boost::program_options Boost::system)
+target_link_libraries(${PROJECT_NAME} INTERFACE Boost::system)
 
 ### Install ###
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
