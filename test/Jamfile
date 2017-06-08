@@ -17,6 +17,7 @@ compile zlib.cpp : : ;
 unit-test core-tests :
     ../extras/beast/unit_test/main.cpp
     core/async_result.cpp
+    core/bench.cpp
     core/bind_handler.cpp
     core/buffer_cat.cpp
     core/buffer_prefix.cpp
