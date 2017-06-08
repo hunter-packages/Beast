@@ -156,7 +156,7 @@ if(Beast_BUILD_TESTS)
 endif(Beast_BUILD_TESTS)
 
 add_library(${PROJECT_NAME} INTERFACE)
-target_link_libraries(${PROJECT_NAME} INTERFACE Boost::system Boost::filesystem Boost::program_options Boost::context Boost::coroutine Boost::thread)
+target_link_libraries(${PROJECT_NAME} INTERFACE Boost::coroutine Boost::context Boost::thread Boost::filesystem Boost::program_options Boost::system)
 
 ### Install ###
 set(generated_dir "${CMAKE_CURRENT_BINARY_DIR}/generated")
