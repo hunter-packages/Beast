@@ -27,7 +27,7 @@ add_executable (http-tests
 
 target_include_directories(http-tests PRIVATE ../../examples)
 
-target_link_libraries(http-tests Beast)
+target_link_libraries(http-tests Beast Boost::program_options Boost::filesystem Boost::coroutine Boost::thread Boost::context)
 
 add_executable (http-bench
     nodejs_parser.hpp
@@ -37,4 +37,4 @@ add_executable (http-bench
     parser_bench.cpp
 )
 
-target_link_libraries(http-bench Beast)
+target_link_libraries(http-bench Beast Boost::program_options Boost::filesystem)

@@ -22,7 +22,7 @@ add_executable (http-server
     http_server.cpp
 )
 
-target_link_libraries(http-server Beast)
+target_link_libraries(http-server Beast Boost::program_options Boost::filesystem)
 
 
 add_executable (http-example

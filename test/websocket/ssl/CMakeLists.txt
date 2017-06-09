@@ -6,4 +6,4 @@ add_executable (websocket-ssl-tests
     ssl_server.cpp
 )
 
-target_link_libraries(websocket-ssl-tests Beast OpenSSL::SSL)
+target_link_libraries(websocket-ssl-tests Boost::program_options Boost::filesystem Beast OpenSSL::SSL)

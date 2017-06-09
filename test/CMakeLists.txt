@@ -10,7 +10,7 @@ add_executable (lib-tests
     zlib.cpp
 )
 
-target_link_libraries(lib-tests Beast)
+target_link_libraries(lib-tests Beast Boost::program_options)
 
 if (MINGW)
     set_target_properties(lib-tests PROPERTIES COMPILE_FLAGS "-Wa,-mbig-obj")
