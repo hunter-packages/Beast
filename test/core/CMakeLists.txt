@@ -27,4 +27,4 @@ add_executable (core-tests
     sha1.cpp
 )
 
-target_link_libraries(core-tests Beast)
+target_link_libraries(core-tests Beast Boost::program_options Boost::filesystem Boost::coroutine Boost::thread Boost::context)

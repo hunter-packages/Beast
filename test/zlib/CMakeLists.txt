@@ -13,4 +13,4 @@ add_executable (zlib-tests
     inflate_stream.cpp
 )
 
-target_link_libraries(zlib-tests Beast)
+target_link_libraries(zlib-tests Beast Boost::program_options Boost::filesystem)
